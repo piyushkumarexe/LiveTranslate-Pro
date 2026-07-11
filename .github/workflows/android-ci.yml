@@ -37,7 +37,7 @@ jobs:
             echo "GOOGLE_SERVICES_JSON is not set; building the Firebase-safe offline variant."
           fi
           if [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
-            printf '%s' "$DEBUG_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/livetranslate-debug.jks"
+            printf '%s' "$DEBUG_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/livetranslate-debug.p12"
           fi
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v4
