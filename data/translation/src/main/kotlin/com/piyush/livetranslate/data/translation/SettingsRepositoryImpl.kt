@@ -58,6 +58,10 @@ private fun UserSettingsEntity.toModel() = UserSettings(
     dynamicColor = dynamicColor,
     onboardingComplete = onboardingComplete,
     cloudSyncEnabled = cloudSyncEnabled,
+    overlayConsentGranted = overlayConsentGranted,
+    overlayTargetLanguage = overlayTargetLanguage,
+    overlayOcrFallbackEnabled = overlayOcrFallbackEnabled,
+    overlaySaveHistory = overlaySaveHistory,
 )
 
 private fun UserSettings.toEntity() = UserSettingsEntity(
@@ -68,4 +72,8 @@ private fun UserSettings.toEntity() = UserSettingsEntity(
     dynamicColor = dynamicColor,
     onboardingComplete = onboardingComplete,
     cloudSyncEnabled = cloudSyncEnabled,
+    overlayConsentGranted = overlayConsentGranted,
+    overlayTargetLanguage = overlayTargetLanguage,
+    overlayOcrFallbackEnabled = overlayOcrFallbackEnabled,
+    overlaySaveHistory = overlaySaveHistory,
 )

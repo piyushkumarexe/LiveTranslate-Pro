@@ -24,7 +24,7 @@ import com.piyush.livetranslate.core.database.entity.UserSettingsEntity
         OfflineMetadataEntity::class,
         CachedResultEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class LiveTranslateDatabase : RoomDatabase() {

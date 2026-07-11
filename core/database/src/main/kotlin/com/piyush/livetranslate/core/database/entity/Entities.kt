@@ -59,6 +59,10 @@ data class UserSettingsEntity(
     val dynamicColor: Boolean = true,
     val onboardingComplete: Boolean = false,
     val cloudSyncEnabled: Boolean = true,
+    val overlayConsentGranted: Boolean = false,
+    val overlayTargetLanguage: String = "en-US",
+    val overlayOcrFallbackEnabled: Boolean = true,
+    val overlaySaveHistory: Boolean = false,
     val updatedAt: Long = System.currentTimeMillis(),
 )
 

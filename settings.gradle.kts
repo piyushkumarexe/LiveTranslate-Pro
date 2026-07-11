@@ -27,6 +27,7 @@ include(
     ":data:translation",
     ":feature:auth",
     ":feature:home",
+    ":feature:overlay",
     ":feature:translate",
     ":feature:history",
     ":feature:settings",

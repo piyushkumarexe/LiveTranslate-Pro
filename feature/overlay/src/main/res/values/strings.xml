@@ -1,0 +1,5 @@
+<resources>
+    <string name="accessibility_service_name">LiveTranslate screen translation</string>
+    <string name="accessibility_service_summary">Translates newly appearing text over other apps</string>
+    <string name="accessibility_service_description">Reads visible, non-password screen text to translate it in a movable overlay. It does not perform taps or actions. Optional OCR fallback is used when apps do not expose accessible text.</string>
+</resources>

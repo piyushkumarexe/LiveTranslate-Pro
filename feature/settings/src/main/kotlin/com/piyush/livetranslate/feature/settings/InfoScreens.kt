@@ -54,9 +54,10 @@ fun PrivacyScreen(onBack: () -> Unit) {
             Text("Privacy by design", style = MaterialTheme.typography.headlineMedium)
             PrivacySection("On-device data", "Translation history, favorites, settings and cached results are stored in the app's private Room database. Other apps cannot access it without a compromised device.")
             PrivacySection("Cloud data", "When you sign in and enable cloud sync, profile, device metadata, translations, favorites and settings are stored in your Firebase project and protected by per-user security rules.")
-            PrivacySection("Speech and images", "Speech recognition and text-to-speech may use services provided by your device vendor. OCR processing runs through ML Kit. Review the policies of the services configured on your device.")
-            PrivacySection("AI translation", "Text is sent to an authenticated Firebase Function, which forwards it to Groq. The Groq API key never ships in the Android app.")
-            PrivacySection("Your controls", "You can delete individual records, clear all history, clear cached translations, disable cloud sync, or sign out at any time.")
+            PrivacySection("Accessibility service", "After a separate prominent disclosure and your affirmative consent, the service reads newly appearing visible text so it can translate over other apps. It skips editable and password fields, known private system surfaces, and never taps, types, scrolls, or changes another app.")
+            PrivacySection("OCR fallback", "On Android 11 or newer, optional ML Kit OCR can process a temporary screenshot only when accessible text is unavailable or when you press OCR scan. The overlay is hidden during capture, secure windows cannot be captured, and the bitmap is discarded immediately after recognition.")
+            PrivacySection("AI translation", "Recognized text is sent to an authenticated Firebase Function, which forwards it to Groq. The Groq API key never ships in the Android app. Overlay history is disabled by default.")
+            PrivacySection("Your controls", "Pause from the movable overlay, stop or disable the service at any time, revoke screen-text consent, keep overlay history off, clear cached translations, disable cloud sync, or sign out.")
         }
     }
 }

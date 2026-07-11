@@ -16,8 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.CameraAlt
-import androidx.compose.material.icons.rounded.RecordVoiceOver
+import androidx.compose.material.icons.rounded.PictureInPictureAlt
+import androidx.compose.material.icons.rounded.AccessibilityNew
+import androidx.compose.material.icons.rounded.DocumentScanner
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -56,9 +57,9 @@ import kotlinx.coroutines.launch
 
 private data class OnboardingPage(val icon: ImageVector, val title: String, val body: String)
 private val pages = listOf(
-    OnboardingPage(Icons.Rounded.RecordVoiceOver, "Speak without borders", "Live speech translation with progressive subtitles and natural voice output."),
-    OnboardingPage(Icons.Rounded.AutoAwesome, "Made for real conversations", "Two-person interpreter mode switches direction as naturally as your conversation."),
-    OnboardingPage(Icons.Rounded.CameraAlt, "Translate what you see", "Capture signs and documents, or choose an image from your gallery."),
+    OnboardingPage(Icons.Rounded.AccessibilityNew, "Translation in every app", "LiveTranslate watches newly appearing visible text through Android Accessibility and translates it without making you switch apps."),
+    OnboardingPage(Icons.Rounded.PictureInPictureAlt, "A movable live overlay", "Translations stay above the app you are using. Drag the bubble, pause instantly, or stop the service at any time."),
+    OnboardingPage(Icons.Rounded.DocumentScanner, "OCR only when needed", "If an app does not expose accessible text, optional on-device OCR can read the visible screen on Android 11 and newer."),
 )
 
 @Composable

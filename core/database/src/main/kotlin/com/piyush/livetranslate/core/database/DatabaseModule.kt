@@ -20,7 +20,9 @@ import javax.inject.Singleton
 object DatabaseModule {
     @Provides @Singleton
     fun database(@ApplicationContext context: Context): LiveTranslateDatabase =
-        Room.databaseBuilder(context, LiveTranslateDatabase::class.java, "live_translate.db").build()
+        Room.databaseBuilder(context, LiveTranslateDatabase::class.java, "live_translate.db")
+            .addMigrations(MIGRATION_1_2)
+            .build()
 
     @Provides fun translations(db: LiveTranslateDatabase): TranslationDao = db.translationDao()
     @Provides fun favorites(db: LiveTranslateDatabase): FavoriteDao = db.favoriteDao()
