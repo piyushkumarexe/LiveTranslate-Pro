@@ -1,0 +1,4 @@
+# Copy to local.properties. Never commit local.properties.
+sdk.dir=/path/to/Android/Sdk
+# Optional fallback if app/google-services.json has no web OAuth client.
+GOOGLE_WEB_CLIENT_ID=000000000000-example.apps.googleusercontent.com

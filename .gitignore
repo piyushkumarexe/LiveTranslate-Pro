@@ -1,0 +1,36 @@
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Secrets and service configuration
+google-services.json
+**/google-services.json
+secrets.properties
+*.jks
+*.keystore
+service-account*.json
+.env
+.env.*
+!.env.example
+
+# Firebase
+.firebase/
+.firebaserc
+functions/lib/
+functions/node_modules/
+firebase-debug.log
+
+# Tooling
+.kotlin/
+*.log
