@@ -38,6 +38,13 @@ fun resolveWebClientId(): String {
 
 fun quoted(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 fun secret(name: String): String? = System.getenv(name) ?: localProperties.getProperty(name)
+val debugStoreFile = secret("DEBUG_STORE_FILE")
+val canSignDebug = listOf(
+    debugStoreFile,
+    secret("DEBUG_STORE_PASSWORD"),
+    secret("DEBUG_KEY_ALIAS"),
+    secret("DEBUG_KEY_PASSWORD"),
+).all { !it.isNullOrBlank() }
 val releaseStoreFile = secret("RELEASE_STORE_FILE")
 val canSignRelease = listOf(
     releaseStoreFile,
@@ -85,6 +92,7 @@ android {
         debug {
             versionNameSuffix = "-debug"
             isMinifyEnabled = false
+            if (canSignDebug) signingConfig = signingConfigs.getByName("ciDebug")
         }
         release {
             isMinifyEnabled = true
