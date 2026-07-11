@@ -38,7 +38,7 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v4
       - name: Unit tests and Debug APK
-        run: ./gradlew --no-daemon testDebugUnitTest :core:model:test :domain:test :app:assembleDebug
+        run: ./gradlew --no-daemon testDebugUnitTest :core:model:test :domain:test lintDebug :app:assembleDebug
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
