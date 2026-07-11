@@ -62,6 +62,15 @@ android {
     }
 
     signingConfigs {
+        if (canSignDebug) {
+            create("ciDebug") {
+                storeFile = rootProject.file(requireNotNull(debugStoreFile))
+                storeType = "PKCS12"
+                storePassword = secret("DEBUG_STORE_PASSWORD")
+                keyAlias = secret("DEBUG_KEY_ALIAS")
+                keyPassword = secret("DEBUG_KEY_PASSWORD")
+            }
+        }
         if (canSignRelease) {
             create("release") {
                 storeFile = rootProject.file(requireNotNull(releaseStoreFile))
