@@ -154,7 +154,7 @@ fun LoginScreen(
                     Text("Google Sign-In will be enabled after adding google-services.json.", Modifier.padding(top = 10.dp), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
                 }
                 Spacer(Modifier.height(12.dp))
-                OutlinedButton(onClick = onContinueOffline, modifier = Modifier.fillMaxWidth().height(50.dp)) { Text("Use offline mode") }
+                OutlinedButton(onClick = onContinueOffline, modifier = Modifier.fillMaxWidth().height(50.dp)) { Text("Preview controls without cloud translation") }
             }
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(16.dp))
         }

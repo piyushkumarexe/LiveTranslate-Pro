@@ -105,7 +105,6 @@ dependencies {
     implementation(project(":feature:auth"))
     implementation(project(":feature:home"))
     implementation(project(":feature:overlay"))
-    implementation(project(":feature:translate"))
     implementation(project(":feature:history"))
     implementation(project(":feature:settings"))
 

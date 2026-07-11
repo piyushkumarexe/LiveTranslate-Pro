@@ -14,10 +14,19 @@ internal class OcrFallbackEngine {
         .flatMap { it.lines }
         .map { it.text.replace(Regex("\\s+"), " ").trim() }
         .filter { it.length >= 2 && it.any(Char::isLetter) }
+        .filterNot(::looksSensitive)
         .distinct()
         .take(12)
         .joinToString("\n")
         .take(1_500)
+
+    private fun looksSensitive(text: String): Boolean {
+        val lowered = text.lowercase()
+        val label = listOf("password", "passcode", "one-time password", "verification code", "security code", "cvv", "otp").any(lowered::contains)
+        val shortCode = Regex("(?<!\\d)\\d{4,8}(?!\\d)").containsMatchIn(text)
+        val cardLike = Regex("(?:\\d[ -]?){13,19}").containsMatchIn(text)
+        return cardLike || (label && shortCode)
+    }
 
     fun close() = recognizer.close()
 }

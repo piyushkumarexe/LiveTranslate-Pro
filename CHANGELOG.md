@@ -4,6 +4,13 @@ All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Changed
+- Replaced the packaged manual text/speech translator flow with a system-wide Accessibility Service translation dashboard.
+- Accessibility node text is now the primary live input, with deduplication, debounce, sensitive-field filtering, and a movable accessibility overlay.
+- Added optional Android 11+ ML Kit screenshot OCR fallback for apps that expose no accessible text.
+- Added prominent consent, pause/resume, stop, consent revocation, OCR controls, privacy-first history defaults, and Room migration 1→2.
+- Removed microphone/camera permissions and the standalone translate feature from the application build.
+
 ### Planned
 - Firebase App Check enforcement
 - Streaming translation responses

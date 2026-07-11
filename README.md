@@ -3,159 +3,147 @@
 [![Android CI](https://github.com/piyushkumarexe/LiveTranslate-Pro/actions/workflows/android-ci.yml/badge.svg)](https://github.com/piyushkumarexe/LiveTranslate-Pro/actions/workflows/android-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-635BFF.svg)](LICENSE)
 
-A modern Android translator for live speech, two-person conversations, typed text, and camera/gallery OCR. Built with Kotlin, Jetpack Compose, Clean Architecture, Room, Firebase, and a server-side Groq adapter.
+A system-wide Android live translation overlay. LiveTranslate Pro watches newly appearing visible text in the app currently on screen, translates it, and displays the result in a movable overlay—without requiring users to copy text, paste text, or switch applications.
 
-> **Security:** AI credentials are never packaged in the APK. Android calls an authenticated Firebase Callable Function; the function reads `GROQ_API_KEY` from Firebase Secret Manager.
+> **Application ID:** `com.piyush.livetranslate`
+>
+> **Primary architecture:** Accessibility text extraction → debounced translation → accessibility overlay. OCR is a fallback, not the default capture path.
 
-## Highlights
+## System-wide behavior
 
-- Live speech-to-text with partial subtitles and low-latency debounced translation
-- Speech-to-speech, text-to-text, and text-to-voice
-- Two-person interpreter mode with automatic turn switching
-- Automatic language detection and dedicated Hinglish prompting
-- Camera and gallery OCR with editable recognized text
-- Room-backed history, search, favorites, export, settings, metadata, and response cache
-- Firebase Google Authentication, Firestore sync, Crashlytics, Analytics, Storage, and FCM entry point
-- Material 3 light/dark/dynamic themes, responsive layouts, animations, and accessible controls
-- Offline-first writes with WorkManager sync when connectivity returns
-- Modular provider boundary for replacing Groq later
+1. The user reviews a prominent in-app disclosure and affirmatively allows screen-text translation.
+2. The user enables **LiveTranslate screen translation** in Android Accessibility settings.
+3. The service listens only for relevant window/content/text changes.
+4. It traverses the active accessibility node tree and extracts newly visible, non-editable text.
+5. New text is deduplicated and debounced before translation.
+6. The translated result appears in a draggable `文` accessibility overlay above the current app.
+7. If an app exposes no accessibility text, optional on-device ML Kit OCR can inspect a temporary screenshot on Android 11+.
 
-## Modules
+There is no manual text-entry translator in the packaged navigation flow. The previous speech/text feature module is not included in the application build.
+
+## Privacy and safety boundaries
+
+- Accessibility access is disabled until the user completes a separate prominent disclosure and Android's system confirmation.
+- `android:isAccessibilityTool` is explicitly `false`; this utility must complete the Accessibility API declaration in Play Console.
+- The service never performs clicks, gestures, typing, scrolling, navigation, or autonomous UI actions.
+- Editable fields, password nodes, OTP/security-code patterns, payment-card-like values, the lock/system UI, keyboards, permission surfaces, and this app's own UI are excluded.
+- If any visible accessibility node is marked as a password, translation pauses for that screen.
+- OCR runs on-device, hides the overlay during capture, rejects known sensitive patterns, discards the bitmap immediately, and cannot capture `FLAG_SECURE` windows.
+- Overlay history is off by default. Users can pause, stop, disable, or revoke consent at any time.
+- Recognized text—not screenshots—is sent to the configured translation backend. Groq credentials never ship in the APK.
+
+Review [Accessibility Overlay Design](docs/ACCESSIBILITY_OVERLAY.md) and [Security Policy](SECURITY.md) before distribution.
+
+## Overlay controls
+
+- Drag the `文` bubble to reposition it.
+- Tap the bubble to expand or collapse the result card.
+- **Pause/Resume** stops and restarts observation immediately.
+- **Scan** requests one OCR fallback scan.
+- **Stop** disables the accessibility service.
+- The app dashboard selects the target language and controls OCR/history preferences.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  E[Accessibility events] --> X[Safe node text extractor]
+  X --> D[New-text diff + debounce]
+  X -->|no readable nodes| O[ML Kit OCR fallback]
+  O --> D
+  D --> U[TranslateText use case]
+  U --> R[Offline-first repository]
+  R --> C[(Local cache / Room)]
+  R --> F[Firebase callable function]
+  F --> G[Groq via Secret Manager]
+  U --> W[TYPE_ACCESSIBILITY_OVERLAY]
+  S[User settings + consent] --> E
+  S --> O
+  S --> W
+```
+
+### Modules
 
 ```text
-app                  Composition root, navigation, FCM, application setup
-core:model           Shared immutable models and language catalog
-core:common          Connectivity and platform utilities
-core:database        Room entities, DAOs, database, DI
-core:ui              Material 3 theme and reusable UI components
-domain                Repository contracts and use cases
-data:auth             Firebase Auth and Firestore user/device profiles
-data:translation      AI adapter, sync, settings, speech, TTS, caching
-feature:auth          Onboarding and Google login
-feature:home          Home and profile
-feature:translate     Live, conversation, and OCR experiences
-feature:history       Search, delete, favorites, export, cloud sync
-feature:settings      Settings, privacy, and about
-functions             Firebase Functions Groq proxy and rate limiting
+app                  Composition root, navigation, WorkManager, FCM
+core:model           Immutable models and language catalog
+core:common          Network/platform utilities
+core:database        Room entities, DAOs, schema and migrations
+auth/data            Firebase authentication and user/device profiles
+data:translation     Provider boundary, cache, persistence and cloud sync
+domain               Repository contracts and use cases
+feature:overlay       Accessibility service, node extraction, OCR and overlay UI
+feature:auth          Onboarding, disclosure-adjacent login flow
+feature:home          Profile screen
+feature:history       Search, favorites, delete, export and cloud sync
+feature:settings      Privacy, appearance and account settings
+functions             Secret-backed Firebase/Groq translation proxy
 ```
 
-See [Architecture](docs/ARCHITECTURE.md), [database design](docs/DATABASE.md), [authentication flow](docs/AUTHENTICATION.md), and [setup/build guide](docs/SETUP.md).
+## Requirements
 
-## Quick start
+- Android 8.0+ (API 26) for accessibility-node translation
+- Android 11+ (API 30) for Accessibility Service screenshot/OCR fallback
+- JDK 17 and Android SDK 35 for builds
+- Firebase project and Google Authentication for cloud translation
+- Firebase Blaze plan for outbound Cloud Functions provider calls
+- Node.js 20 and Firebase CLI for backend deployment
 
-### Prerequisites
+## Firebase setup
 
-- Android Studio Ladybug or newer
-- JDK 17
-- Android SDK 35
-- A Firebase project on the Blaze plan for outbound Cloud Functions calls
-- Firebase CLI and Node.js 20 for backend deployment
-
-### Android
-
-1. Clone the repository.
-2. Register the Android app `com.piyush.livetranslate` in Firebase and add both debug and release SHA-1/SHA-256 signing fingerprints.
-3. Download its Firebase configuration as `app/google-services.json`.
-4. Enable **Authentication → Google**, Firestore, Storage, Crashlytics, and Cloud Messaging.
-5. Deploy rules and the translation function (instructions below).
-6. Build:
+1. Register Android app `com.piyush.livetranslate` in Firebase.
+2. Add debug/release SHA-1 and SHA-256 fingerprints.
+3. Put the downloaded file at `app/google-services.json`—it is gitignored.
+4. Enable Google Authentication, Firestore, Functions, Storage, Crashlytics, and Cloud Messaging.
+5. Store Groq only in Firebase Secret Manager:
 
 ```bash
-./gradlew :app:assembleDebug
-```
-
-The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
-
-`google-services.json` is intentionally gitignored. The Google web OAuth client ID is extracted from it at build time. As a fallback, set `GOOGLE_WEB_CLIENT_ID` in untracked `local.properties` or the environment.
-
-### Secure Groq setup
-
-Do **not** place a Groq key in `local.properties`, Gradle fields, source code, or GitHub Actions Android build secrets. A key embedded in an APK can always be recovered.
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use YOUR_FIREBASE_PROJECT_ID
 firebase functions:secrets:set GROQ_API_KEY
 npm --prefix functions ci
 npm --prefix functions run build
 firebase deploy --only functions,firestore:rules,firestore:indexes,storage
 ```
 
-Optionally select a model without code changes:
+The Android app calls an authenticated callable function. The backend validates inputs, prevents prompt instructions inside screen text from being executed, rate-limits by UID, and returns a structured translation response.
+
+## Build
 
 ```bash
-firebase functions:config:set # not used for secrets
-# During deploy, set the GROQ_MODEL parameter when prompted, or accept the default.
+./gradlew --no-daemon testDebugUnitTest :core:model:test :domain:test lintDebug :app:assembleDebug
 ```
 
-The callable function requires Firebase Authentication, validates input, enforces a per-user rate limit, treats source text as untrusted data, and limits runtime/instances.
+APK: `app/build/outputs/apk/debug/app-debug.apk`.
 
-## Firebase collections
+The GitHub Actions workflow performs the same checks on every push and uploads the Debug APK as a workflow artifact. It can compile a Firebase-safe configuration without `google-services.json`; cloud translation remains unavailable in that variant.
 
-| Collection | Document ID | Purpose |
-|---|---|---|
-| `users` | `{uid}` | Profile, created time, last login |
-| `devices` | `{uid}_{deviceHash}` | Device and FCM metadata |
-| `translations` | `{translationId}` | User-owned translation records |
-| `favorites` | `{uid}_{translationId}` | User-owned favorite references |
-| `settings` | `{uid}` | Synced preferences |
-| `rateLimits` | `{uid}` | Server-only Functions rate limit state |
+## Google Play release requirements
 
-Firestore persistence plus Room/WorkManager provide delayed synchronization. Rules deny cross-user access and deny all unspecified paths.
+Accessibility Service is sensitive access. Before publishing:
 
-## GitHub Actions and releases
+- Complete the Accessibility API declaration accurately; do not claim the app is a disability accessibility tool.
+- Include the system-wide translation behavior in the store listing.
+- Provide the required demo video showing disclosure, consent, service enablement, overlay behavior, pause/stop, and data handling.
+- Host a complete privacy policy and complete Data Safety disclosures.
+- Verify the disclosure wording with current Play policy and legal/privacy review.
+- Test banking, password, secure-window, keyboard, lock-screen, RTL, rotation, multi-window, and accessibility interaction behavior.
 
-- Every push/PR runs unit checks, builds the Firebase Functions TypeScript, and creates a Debug APK artifact.
-- Tags matching `v*` build a minified, signed release APK and publish a GitHub Release.
+## Known platform limitations
 
-Configure these GitHub Actions secrets before tagging:
+- Some apps expose incomplete or no accessibility node text.
+- Secure windows cannot be screenshotted and are intentionally not translated with OCR.
+- OCR fallback is unavailable before Android 11 unless a future explicit MediaProjection flow is added.
+- Accessibility overlays and service restart behavior vary by OEM battery/process management.
+- Cloud latency depends on connectivity and backend region; local cache hits are faster.
 
-- `GOOGLE_SERVICES_JSON`
-- `RELEASE_KEYSTORE_BASE64`
-- `RELEASE_STORE_PASSWORD`
-- `RELEASE_KEY_ALIAS`
-- `RELEASE_KEY_PASSWORD`
+## Documentation
 
-The Groq key belongs in Firebase Secret Manager, **not** GitHub's Android build workflow.
-
-## Testing
-
-```bash
-./gradlew testDebugUnitTest :core:model:test :domain:test lintDebug
-npm --prefix functions run build
-```
-
-Use Firebase Emulator Suite for rules and function development. Speech recognition, TTS voices, and Credential Manager behavior should also be tested on physical devices from multiple OEMs.
-
-## Performance and resilience
-
-- Compose state is Flow-backed and lifecycle-aware.
-- Partial speech results are debounced before network calls.
-- SHA-256 keyed results are cached for 30 days.
-- WorkManager uses connected-network constraints and bounded retries.
-- Room is the UI source of truth; cloud synchronization does not block browsing.
-- R8 and resource shrinking are enabled for release builds.
-
-Actual latency depends on the Android speech service, network path, Firebase region, selected Groq model, and TTS engine. Deploy Functions near the expected user base and measure end-to-end p50/p95 before defining an SLA.
-
-## Roadmap
-
-- Firebase App Check enforcement with Play Integrity
-- Streaming backend transport for token-level translation updates
-- Multi-script OCR models and document layout preservation
-- Downloadable on-device translation fallback
-- End-to-end sync tombstones and cursor-based pagination
-- Wear OS / Android Auto companion experiences
-- Macrobenchmark and baseline profiles
-
-## Contributing
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md). Please report security issues privately as described in [SECURITY.md](SECURITY.md).
-
-## Branding
-
-“Made by Piyush” is displayed subtly on the splash, About page, and Settings footer.
+- [Accessibility Overlay](docs/ACCESSIBILITY_OVERLAY.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Authentication](docs/AUTHENTICATION.md)
+- [Database](docs/DATABASE.md)
+- [Setup](docs/SETUP.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
 
 ## License
 
