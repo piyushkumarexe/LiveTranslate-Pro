@@ -51,7 +51,7 @@ object LanguageCatalog {
     }
 }
 
-enum class TranslationOrigin { TEXT, SPEECH, CONVERSATION, OCR }
+enum class TranslationOrigin { TEXT, SPEECH, CONVERSATION, OCR, SCREEN_ACCESSIBILITY, SCREEN_OCR }
 enum class SyncState { PENDING, SYNCED, FAILED }
 
 data class Translation(
