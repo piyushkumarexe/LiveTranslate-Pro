@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function ownsIncoming() { return signedIn() && request.resource.data.userId == request.auth.uid; }
+    function ownsExisting() { return signedIn() && resource.data.userId == request.auth.uid; }
+
+    match /users/{uid} {
+      allow read, create, update, delete: if signedIn() && request.auth.uid == uid;
+    }
+    match /translations/{id} {
+      allow create: if ownsIncoming();
+      allow read, delete: if ownsExisting();
+      allow update: if ownsExisting() && ownsIncoming();
+    }
+    match /favorites/{id} {
+      allow create: if ownsIncoming();
+      allow read, delete: if ownsExisting();
+      allow update: if ownsExisting() && ownsIncoming();
+    }
+    match /settings/{uid} {
+      allow read, create, update, delete: if signedIn() && request.auth.uid == uid &&
+        (!('userId' in request.resource.data) || request.resource.data.userId == uid);
+    }
+    match /devices/{id} {
+      allow create: if ownsIncoming();
+      allow read, delete: if ownsExisting();
+      allow update: if ownsExisting() && ownsIncoming();
+    }
+    match /rateLimits/{uid} {
+      allow read, write: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
